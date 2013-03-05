@@ -1,0 +1,22 @@
+Entities\Group:
+  type: entity
+  table: groups
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    name:
+      type: string
+      length: 255
+      nullable: false
+    shortDescription:
+      type: string
+      length: 255
+      nullable: false
+      column: short_description
+    is_active:
+      type: boolean
+      nullable: false
+      column: is_active

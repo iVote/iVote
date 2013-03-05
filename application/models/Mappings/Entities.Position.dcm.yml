@@ -1,0 +1,25 @@
+Entities\Position:
+  type: entity
+  table: positions
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    title:
+      type: string
+      length: 255
+      nullable: false
+    limit:
+      type: integer
+      length: 3
+      nullable: false
+    isGroupDependent:
+      type: boolean
+      nullable: false
+      column: is_group_dependent
+    is_active:
+      type: boolean
+      nullable: false
+      column: is_active

@@ -1,0 +1,20 @@
+Entities\PositionGroup:
+  type: entity
+  table: positions_groups
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+    positions_id:
+      type: integer
+      nullable: false
+    groups_id:
+      type: integer
+      nullable: false
+  relations:
+    Position:
+      foreignAlias: PositionGroup
+    Group:
+      foreignAlias: PositionGroup
