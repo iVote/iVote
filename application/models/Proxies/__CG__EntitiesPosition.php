@@ -63,16 +63,16 @@ class Position extends \Entities\Position implements \Doctrine\ORM\Proxy\Proxy
         return parent::getTitle();
     }
 
-    public function setLimit($limit)
+    public function setLimitation($limitation)
     {
         $this->__load();
-        return parent::setLimit($limit);
+        return parent::setLimitation($limitation);
     }
 
-    public function getLimit()
+    public function getLimitation()
     {
         $this->__load();
-        return parent::getLimit();
+        return parent::getLimitation();
     }
 
     public function setIsGroupDependent($isGroupDependent)
@@ -99,10 +99,22 @@ class Position extends \Entities\Position implements \Doctrine\ORM\Proxy\Proxy
         return parent::getIsActive();
     }
 
+    public function addGroup(\Entities\Group $groups)
+    {
+        $this->__load();
+        return parent::addGroup($groups);
+    }
+
+    public function getGroups()
+    {
+        $this->__load();
+        return parent::getGroups();
+    }
+
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'title', 'limit', 'isGroupDependent', 'is_active');
+        return array('__isInitialized__', 'id', 'title', 'limitation', 'isGroupDependent', 'isActive', 'groups');
     }
 
     public function __clone()

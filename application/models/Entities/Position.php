@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Position
 {
+
+    const BOOL_TRUE  = 1;
+    const BOOL_FALSE = 0;
+
     /**
      * @var integer $id
      */
@@ -20,21 +24,30 @@ class Position
     private $title;
 
     /**
-     * @var integer $limit
+     * @var integer $limitation
      */
-    private $limit;
+    private $limitation;
 
     /**
      * @var boolean $isGroupDependent
      */
-    private $isGroupDependent;
+    private $isGroupDependent = self::BOOL_FALSE;
 
     /**
-     * @var boolean $is_active
+     * @var boolean $isActive
      */
-    private $is_active;
+    private $isActive = self::BOOL_TRUE;
 
+    /**
+     * @var \Doctrine\Common\Collections\ArrayCollection
+     */
+    private $groups;
 
+    public function __construct()
+    {
+        $this->groups = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
     /**
      * Get id
      *
@@ -68,25 +81,25 @@ class Position
     }
 
     /**
-     * Set limit
+     * Set limitation
      *
-     * @param integer $limit
+     * @param integer $limitation
      * @return Position
      */
-    public function setLimit($limit)
+    public function setLimitation($limitation)
     {
-        $this->limit = $limit;
+        $this->limitation = $limitation;
         return $this;
     }
 
     /**
-     * Get limit
+     * Get limitation
      *
      * @return integer 
      */
-    public function getLimit()
+    public function getLimitation()
     {
-        return $this->limit;
+        return $this->limitation;
     }
 
     /**
@@ -112,24 +125,46 @@ class Position
     }
 
     /**
-     * Set is_active
+     * Set isActive
      *
      * @param boolean $isActive
      * @return Position
      */
     public function setIsActive($isActive)
     {
-        $this->is_active = $isActive;
+        $this->isActive = $isActive;
         return $this;
     }
 
     /**
-     * Get is_active
+     * Get isActive
      *
      * @return boolean 
      */
     public function getIsActive()
     {
-        return $this->is_active;
+        return $this->isActive;
+    }
+
+    /**
+     * Add groups
+     *
+     * @param Entities\Group $groups
+     * @return Position
+     */
+    public function addGroup(\Entities\Group $groups)
+    {
+        $this->groups[] = $groups;
+        return $this;
+    }
+
+    /**
+     * Get groups
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getGroups()
+    {
+        return $this->groups;
     }
 }

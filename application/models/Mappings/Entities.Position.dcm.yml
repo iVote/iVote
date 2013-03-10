@@ -11,15 +11,18 @@ Entities\Position:
       type: string
       length: 255
       nullable: false
-    limit:
+    limitation:
       type: integer
-      length: 3
       nullable: false
+      column: limitation
     isGroupDependent:
       type: boolean
       nullable: false
       column: is_group_dependent
-    is_active:
+    isActive:
       type: boolean
       nullable: false
       column: is_active
+  manyToMany:
+    groups:
+      targetEntity: Entities\Group
