@@ -31,12 +31,12 @@ class Position
     /**
      * @var boolean $isGroupDependent
      */
-    private $isGroupDependent = self::BOOL_FALSE;
+    private $isGroupDependent;
 
     /**
      * @var boolean $isActive
      */
-    private $isActive = self::BOOL_TRUE;
+    private $isActive;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection

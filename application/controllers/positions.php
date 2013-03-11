@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Positions extends CI_Controller {
+class Positions extends Base_Controller {
 	
 	public function __construct()
 	{
@@ -8,9 +8,12 @@ class Positions extends CI_Controller {
 
 		// Load the Position Model to be used by the whole controller.
 		// CodeIgniter Function
-		$this->load->model("Position");
+		$this->load->model(array("Position", "Group"));
 
 	}
+
+
+
 
 	/**
 	 * Index page
@@ -18,11 +21,15 @@ class Positions extends CI_Controller {
 	 */
 	public function index()
 	{
-		$data["positions"]    = $this->Position->get_all();
+		$data["positions"]    = $this->Position->find_all();
 		$data["main_content"] =	"positions/index";
 
 		$this->load->view("admin/template", $data);
 	}
+
+
+
+
 
 	/**
 	 * Search items that varies with the search string
@@ -39,15 +46,24 @@ class Positions extends CI_Controller {
 	}
 
 
+
+
+
 	/**
 	 * Page for adding new content;
 	 */
 	public function add()
 	{
-		$data["main_content"] = "/positions/add";
+		$data["groups"] = $this->Group->find_all();
+
+		$data["main_content"] = "positions/add";
 
 		$this->load->view("admin/template", $data);
 	}
+
+
+
+
 
 
 	/**
@@ -58,67 +74,79 @@ class Positions extends CI_Controller {
 	public function edit($id)
 	{
 		// Fail Early Validation
-		if(!isset($id)) redirect("positions/");
+		if(! isset($id) ) redirect("positions", "location");
 		
 		// Get items via id field
 		$position = $this->Position->find_by(array("id" => $id));
 
 		// Fail Early if the query returns no item
-		if (is_null($position)) {
-			echo "error";
-			exit();
+		if ( is_null($position) ) {
+			redirect("positions", "location");
 		}
 
-		$data["edit"]         =	TRUE;
-		$data["position"]     = $position;
-		$data["main_content"] = "positions/edit";
+		$data["edit"]          = TRUE;
+		$data["position"]      = $position;
+		$data["groups"]        = $this->Group->find_all();
+		$data["active_groups"] = $this->Group->get_group_ids($position);
+		$data["main_content"]  = "positions/edit";
 
 		$this->load->view("admin/template", $data);
 
 	}
 
-	public function remove($id)
+
+
+
+
+
+
+	public function remove($id = NULL)
 	{
-		// Fail Early Validation
-		if(! isset($id)) redirect("positions/");
+		try {
+			
+			$this->Position->soft_delete((int) $id);
+			
+		} catch (Exception $e) {
 
-		// Get items via id field
-		$position = $this->Position->find_by(array("id" => $id));
-
-		// Fail Early if the query returns no item
-		if (is_null($position)) {
-			echo "error";
+			echo $e->getMessage();
+			
 			exit();
+
 		}
-
-		$response = $this->Position->save(array("id" => $id, "isActive" => 0));
-
-		// If operation fails.
-		if (! $response) {
-			echo "error";
-			exit();
-		}
-
-		redirect("positions/", "location");
+			
+		redirect("positions", "location");	
 
 	}
+
+
+
 
 
 
 	// Page that handles the database transactions
 	public function submit()
 	{
-		// Get the response from the model
-		$response = $this->Position->save($this->input->post(NULL, TRUE));
 
-		// If operation fails
-		if (! $response){
-			echo "error";
+		try {
+			
+			// Get the response from the model
+			$this->Position->submit($this->input->post(NULL, TRUE));
+			
+		} catch (Exception $e) {
+			
+			echo $e->getMessage();
+
 			exit();
+
 		}
 
 		redirect("positions", "location");
 	}
+
+
+
+
+
 
 	// Bootstrap page
 	public function bootstrap()

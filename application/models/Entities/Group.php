@@ -105,4 +105,10 @@ class Group
     {
         return $this->is_active;
     }
+    /**
+     * @var boolean $isActive
+     */
+    private $isActive;
+
+
 }

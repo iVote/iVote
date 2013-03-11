@@ -90,7 +90,7 @@ class Group extends \Entities\Group implements \Doctrine\ORM\Proxy\Proxy
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'name', 'shortDescription', 'is_active');
+        return array('__isInitialized__', 'id', 'name', 'shortDescription', 'isActive');
     }
 
     public function __clone()

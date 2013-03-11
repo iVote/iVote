@@ -1,149 +1,52 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Position extends CI_Model {
-
-	// Entity Used for this Model
-	const ENTITY_MODEL   = "Entities\Position";
-
-	// Default value for isActive field;
-	const DEFAULT_STATUS = 1;
-
-	// Private variable that holds the shortening of EntityManager call
-	private $_em;
-
-	// Default isActive status set in array() for querying.
-	private $_DEFAULT_STATUS = array();
-
-
-
+class Position extends MY_Model {
 
 
 	public function __construct()
 	{
 		parent::__construct();
+	
+		// Initialize Doctrine in the Parent Class.
+		$this->init($this->doctrine->em);
 
-		// Shortening the EntityManager Call
-		// Doctrine ORM Function
-		$this->_em = $this->doctrine->em->getRepository(self::ENTITY_MODEL);
+	}
+
+
+	public function submit($data)
+	{
+		$this->load->model("Group");
+
+		// Check if we can see an entry from the database
+		$item = $this->find_by( array("title" => $data["title"]), FALSE);
+
+		if (!empty($item)) {
+			// Merge is_group_dependent condition to the base array.
+			$data["id"] = $item[0]->getId();
+
+		} 
 		
-		// Setup default isActive status
-		$this->_DEFAULT_STATUS = array('isActive' => self::DEFAULT_STATUS);
-	}
+		$data["is_group_dependent"] =  (int) FALSE;
 
+		if (! empty($data["groups"])) {
+			
+			foreach ($data["groups"] as $key => $value) {
 
+				$groups[] = $this->Group->find_by( array("id" => $value));
 
-
-
-
-	/**
-	 * Save data to database. TOOOOOOOOOOOOOOOOOOOOO DRY.
-	 * @param  array  $data [description]
-	 * @return boolean       TRUE if successful, FALSE, if theres on error on given condition.
-	 */
-	public function save($data = array())
-	{
-		// Fail Early validation of array. 
-		// Removes all NULL, FALSE and Empty Strings but leaves 0 (zero) values.
-		$data = array_filter($data, 'strlen');
-
-		if(empty($data)){
-			return FALSE;
-		}
-
-		// Set new Entities\Position object
-		$position = new Entities\Position;
-
-		// Check if id field is present. Meaning, this action is for updating fields.
-		if (! empty($data["id"])) {
-
-			$position = $this->find_by(array("id" => $data["id"]));
-
-			// Return FALSE if found no item.
-			if (is_null($position)) {
-				return FALSE;
 			}
-		}
 
-		// Update the isActive from the passed data.
-		if(isset($data["isActive"])){
-			$position->setIsActive($data["isActive"]);
-		}
+			$data["groups"] = $groups;
 
-		// Set/Update the title from the passed data
-		if (isset($data["title"])) {
-			$position->setTitle($data["title"]);
-		}
-
-		// Set/Update the limitation from the passed data
-		if (isset($data["limitation"])) {
-			$position->setLimitation($data["limitation"]);
-		}
-
-		// Save to a new object
-		$this->doctrine->em->persist($position);
-
-		try {
-
-			// Save to database
-			$this->doctrine->em->flush();
-			
-		} catch (Exception $e) {
-			
-			echo "error in model/position/save";
-			exit();
+			$data["is_group_dependent"] =  TRUE;
 
 		}
 
-		// Successful database operation
-		return TRUE;
+		$data["is_active"] = TRUE;
+
+		$this->save($data);
 
 	}
-
-
-
-
-
-
-	/**
-	 * Get all items on this model
-	 * @return obj [description]
-	 */
-	public function get_all()
-	{
-		return $this->_em->findBy($this->_DEFAULT_STATUS);
-	}
-
-
-
-
-
-
-
-	/**
-	 * Find specific content by users condition
-	 * @param  array  $data conditions via form of array
-	 * @return collection       collection of data
-	 */
-	public function find_by($args = array())
-	{
-		// Removed null value array keys
-		$args = array_filter($args);
-
-		// Return all items if no condition found.
-		if (empty($args)) {
-			return $this->get_all();
-		}
-
-		// Merge isActive condition to the passed condition
-		$condition = array_merge($this->_DEFAULT_STATUS, $args);
-
-		// Return one row if id condition is present. Else, all items that satisfy the condition.
-		return !empty($args["id"]) ? $this->_em->findOneBy($condition) : $this->_em->findBy($condition);
-	}
-
-
-
-
 
 
 
@@ -165,7 +68,7 @@ class Position extends CI_Model {
 
 		foreach ($bootstrap as $key => $value) {
 
-			$position = new Entities\Position;
+			$position = new $this->_ENTITY_MODEL;
 
 			$position->setTitle($value["title"]);
 			$position->setLimitation($value["limitation"]);

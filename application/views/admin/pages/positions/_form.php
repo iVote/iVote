@@ -28,9 +28,31 @@
 		</div>
 	
 	</div>
-	
-	<?php echo "<br />"; ?>
 
+	<div class="control-group">
+
+	<?php echo form_label('Group dependencies:', 'groups', array("class" => "control-label")) ?>
+
+	<?php foreach ($groups as $key => $value) : ?>
+
+		<div class="controls">
+
+			<label class="checkbox">
+				<?php if (isset($edit)) {
+
+					$checked = !is_null($active_groups) ? in_array($value->getId(), $active_groups) : FALSE;
+
+				} ?>
+				<?php echo form_checkbox("groups[]", $value->getId(), isset($edit) ? $checked : FALSE); ?>
+				<?php echo $value->getName(); ?>
+
+			</label>
+
+		</div>
+
+	<?php endforeach; ?>
+	</div>
+	
 	<div class="control-group">
 
 		<div class="controls">
