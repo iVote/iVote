@@ -12,6 +12,9 @@ class Positions extends CI_Controller {
 
 	}
 
+
+
+
 	/**
 	 * Index page
 	 * @return [type] [description]
@@ -23,6 +26,10 @@ class Positions extends CI_Controller {
 
 		$this->load->view("admin/template", $data);
 	}
+
+
+
+
 
 	/**
 	 * Search items that varies with the search string
@@ -39,6 +46,9 @@ class Positions extends CI_Controller {
 	}
 
 
+
+
+
 	/**
 	 * Page for adding new content;
 	 */
@@ -48,6 +58,10 @@ class Positions extends CI_Controller {
 
 		$this->load->view("admin/template", $data);
 	}
+
+
+
+
 
 
 	/**
@@ -77,6 +91,12 @@ class Positions extends CI_Controller {
 
 	}
 
+
+
+
+
+
+
 	public function remove($id)
 	{
 		// Fail Early Validation
@@ -105,6 +125,9 @@ class Positions extends CI_Controller {
 
 
 
+
+
+
 	// Page that handles the database transactions
 	public function submit()
 	{
@@ -119,6 +142,11 @@ class Positions extends CI_Controller {
 
 		redirect("positions", "location");
 	}
+
+
+
+
+
 
 	// Bootstrap page
 	public function bootstrap()

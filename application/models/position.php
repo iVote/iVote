@@ -2,14 +2,23 @@
 
 class Position extends CI_Model {
 
+	/* Configuration
+	 *******************************************/
+	
 	// Entity Used for this Model
 	const ENTITY_MODEL   = "Entities\Position";
 
 	// Default value for isActive field;
 	const DEFAULT_STATUS = 1;
 
+	// End Configuration
+
+
 	// Private variable that holds the shortening of EntityManager call
 	private $_em;
+
+	// Private Entity Model;
+	private $_ENTITY_MODEL;
 
 	// Default isActive status set in array() for querying.
 	private $_DEFAULT_STATUS = array();
@@ -28,6 +37,8 @@ class Position extends CI_Model {
 		
 		// Setup default isActive status
 		$this->_DEFAULT_STATUS = array('isActive' => self::DEFAULT_STATUS);
+		
+		$this->_ENTITY_MODEL   = self::ENTITY_MODEL;
 	}
 
 
@@ -51,7 +62,7 @@ class Position extends CI_Model {
 		}
 
 		// Set new Entities\Position object
-		$position = new Entities\Position;
+		$position = new $this->_ENTITY_MODEL;
 
 		// Check if id field is present. Meaning, this action is for updating fields.
 		if (! empty($data["id"])) {
@@ -165,7 +176,7 @@ class Position extends CI_Model {
 
 		foreach ($bootstrap as $key => $value) {
 
-			$position = new Entities\Position;
+			$position = new $this->_ENTITY_MODEL;
 
 			$position->setTitle($value["title"]);
 			$position->setLimitation($value["limitation"]);
