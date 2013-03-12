@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Positions extends CI_Controller {
+class Positions extends Base_Controller {
 	
 	public function __construct()
 	{
@@ -21,7 +21,7 @@ class Positions extends CI_Controller {
 	 */
 	public function index()
 	{
-		$data["positions"]    = $this->Position->get_all();
+		$data["positions"]    = $this->Position->find_all();
 		$data["main_content"] =	"positions/index";
 
 		$this->load->view("admin/template", $data);
