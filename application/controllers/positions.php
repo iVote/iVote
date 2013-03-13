@@ -97,21 +97,33 @@ class Positions extends Base_Controller {
 
 
 
-	public function remove($id)
+	public function remove($id = NULL)
 	{
-		// Fail Early Validation
-		if(! isset($id)) redirect("positions/");
+		try {
+			
+			$response = $this->Position->soft_delete((int) $id);
+			
+		} catch (Exception $e) {
 
-		// Get items via id field
-		$position = $this->Position->find_by(array("id" => $id));
-
-		// Fail Early if the query returns no item
-		if (is_null($position)) {
-			echo "error";
+			echo $e->getMessage();
+			
 			exit();
-		}
 
-		$response = $this->Position->save(array("id" => $id, "isActive" => 0));
+		}
+			
+		// Fail Early Validation
+		// if(! isset($id)) redirect("positions/");
+
+		// // Get items via id field
+		// $position = $this->Position->find_by(array("id" => $id));
+
+		// // Fail Early if the query returns no item
+		// if (is_null($position)) {
+		// 	echo "error";
+		// 	exit();
+		// }
+
+		// $response = $this->Position->save(array("id" => $id, "isActive" => 0));
 
 		// If operation fails.
 		if (! $response) {
@@ -120,6 +132,7 @@ class Positions extends Base_Controller {
 		}
 
 		redirect("positions/", "location");
+		
 
 	}
 

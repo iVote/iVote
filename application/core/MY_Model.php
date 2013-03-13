@@ -8,35 +8,26 @@ class MY_Model extends CI_Model {
 	| -------------------------------------------------------------------
 	|
 	*/
-	// // Default query field name.
-	// const DEFAULT_CONDITION_KEY   = "isActive"; 
-
-	// // Default directory of Entities.
-	// const DEFAULT_ENTITY_DIR      = "Entities"; 
-
-	// // Default condition value for querying the default field name.
-	// const DEFAULT_CONDITION_VALUE = TRUE; 
-
-	// //
-	// const DEFAULT_SOFT_DELETE_KEY = "isActive";
 
 	private $_DEFAULTS = array(
 
-						"CONDITION_KEY"     => "isActive",
+						"CONDITION_KEY"     => "is_active",
 						
 						"CONDITION_VALUE"   => TRUE,
 						
 						"ENTITY_DIR"        => "Entities",
 						
-						"SOFT_DELETE_KEY"   => "isActive",
+						"SOFT_DELETE_KEY"   => "is_active",
 						
-						"SOFT_DELETE_VALUE" => FALSE
+						"SOFT_DELETE_VALUE" => FALSE,
+
+						"SELECTOR_KEY"			=> "id",
+
+						"SELECTOR_KEY_TYPE" => "integer"
 
 				);
 
-	/*
-	| ----- End Default Dependencies ------------------------------------
-	*/
+	/* ----- End Default Dependencies ------------------------------------ */
 
 
 	//
@@ -53,36 +44,74 @@ class MY_Model extends CI_Model {
 
 	//
 	//
-	protected $BASE_ENTITY_DIR = $this->_DEFAULTS["ENTITY_DIR"];
+	protected $BASE_ENTITY_DIR;
 
 	/**
 	 * Override the BASE_QUERY by passing an array.
 	 * Ex: $this->BASE_QUERY = array("isGroupDependent" => FALSE)
 	 * @var array
 	 */
-	protected $BASE_QUERY = array( $this->_DEFAULTS["CONDITION_KEY"] => $this->_DEFAULTS["CONDITION_VALUE"] );
-
-
-	protected $BASE_SOFT_DELETE_KEY = $this->_DEFAULTS["SOFT_DELETE_KEY"];
-
-	protected $BASE_SOFT_DELETE_VALUE = $this->_DEFAULTS["SOFT_DELETE_VALUE"];
+	protected $BASE_QUERY;
 
 
 	//
 	//
+	protected $BASE_SOFT_DELETE_KEY;
+	
+	//
+	//
+	protected $BASE_SOFT_DELETE_VALUE;
+
+	//
+	//
+	protected $BASE_SELECTOR_KEY;
+
+	//
+	//
+	protected $BASE_SELECTOR_KEY_TYPE;
+
+
+
+	/*
+	| -------------------------------------------------------------------
+	|  Construct
+	| -------------------------------------------------------------------
+	|
+	*/
 	public function __construct()
 	{
 		parent::__construct();
 		
 		// Load this helper to allow the use of humanize() method.
 		$this->load->helper("inflector");
+
+		
+		$this->BASE_QUERY             = array( camelize($this->_DEFAULTS["CONDITION_KEY"]) => $this->_DEFAULTS["CONDITION_VALUE"] );
+		
+		$this->BASE_ENTITY_DIR        = $this->_DEFAULTS["ENTITY_DIR"];
+		
+		$this->BASE_SOFT_DELETE_KEY   = $this->_DEFAULTS["SOFT_DELETE_KEY"];
+		
+		$this->BASE_SOFT_DELETE_VALUE = $this->_DEFAULTS["SOFT_DELETE_VALUE"];
+		
+		$this->BASE_SELECTOR_KEY      = $this->_DEFAULTS["SELECTOR_KEY"];
+
+		$this->BASE_SELECTOR_KEY_TYPE = $this->_DEFAULTS["SELECTOR_KEY_TYPE"];
+
 	}
 
-	/**
-	 * Initialize MY_Model
-	 * @param  [type] $doctrine [description]
-	 * @return [type]           [description]
-	 */
+
+
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Init
+	| -------------------------------------------------------------------
+	|	Initialize Doctrine. 
+	| This is a necessary method.
+	|
+	*/
 	protected function init($doctrine)
 	{
 		$this->_set_entity_object();
@@ -95,21 +124,33 @@ class MY_Model extends CI_Model {
 	}
 
 
-	/**
-	 * Find all items in the database using only the base query requirement.
-	 * @return [type] [description]
-	 */
+
+
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Find All
+	| -------------------------------------------------------------------
+	|	Find all items in the database using only the base query requirement. 
+	|
+	*/
 	public function find_all()
 	{
 		return $this->_EM->findBy($this->BASE_QUERY);
 	}
 
 
-	/**
-	 * Find specific content by users condition
-	 * @param  array  $data conditions via form of array
-	 * @return collection       collection of data
-	 */
+
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Find By
+	| -------------------------------------------------------------------
+	| Find specific content by users condition
+	|
+	*/
 	public function find_by($args = array())
 	{
 		// Removed null value array keys
@@ -124,8 +165,10 @@ class MY_Model extends CI_Model {
 		$condition = array_merge($this->BASE_QUERY, $args);
 
 		// Return one row if id condition is present. Else, all items that satisfy the condition.
-		return !empty($args["id"]) ? $this->_EM->findOneBy($condition) : $this->_EM->findBy($condition);
+		return !empty($args[$this->BASE_SELECTOR_KEY]) ? $this->_EM->findOneBy($condition) : $this->_EM->findBy($condition);
 	}
+
+
 
 
 
@@ -141,12 +184,12 @@ class MY_Model extends CI_Model {
 		// Removes all NULL, FALSE and Empty Strings but leaves 0 (zero) values.
 		$data = array_filter($data, 'strlen');
 
-		if (empty($data)) {
+		if ( empty($data) ) {
 			return FALSE;
 		}
 
 
-		if (! empty($data["id"])) {
+		if (! empty($data[$this->BASE_SELECTOR_KEY])) {
 			return $this->_update($data);
 		}
 
@@ -202,45 +245,70 @@ class MY_Model extends CI_Model {
 	}
 
 
-	public function soft_delete(int $id = NULL )
+	public function soft_delete( $key = NULL )
 	{
+		// TODO: To be improved.
+		$this->_check_var($key);
 
-		if (is_null($id)) {
-			return FALSE;
-		}
+		
+		$item = $this->find_by(array($this->BASE_SELECTOR_KEY => $key));
 
-		$item = $this->find_by(array("id" => $id));
+		try {
 
-		$_method = "set" . humanize($this->BASE_SOFT_DELETE_KEY);
+			if ( is_null($item)) {
+				throw new Exception("No entry found");
+			}
 
-		if (! method_exists($item, $_method)) {
-			return FALSE;
-		}
+			call_user_func_array( array($item, "set" . ucfirst(camelize($this->BASE_SOFT_DELETE_KEY))), array($this->BASE_SOFT_DELETE_VALUE));
 
-		$item->$_method($this->BASE_SOFT_DELETE_VALUE);
+		} catch (Exception $e) { throw $e; }
 
 		return $this->_transact($item);
 
 	}
 
 
-	private function _transact($obj){
 
-		try {
-			
-			$this->_DOCTRINE->persist($obj);
+
+
+	private function _transact($obj) {
+
+		$this->_DOCTRINE->persist($obj);
+		
+		try {	
 
 			$this->_DOCTRINE->flush();
 
-			return TRUE;
-
 		} catch (Exception $e) {
 			
-			
+			throw $e;
 
 		}
 
+		return TRUE;
+
 	}
+
+
+
+
+
+
+
+
+
+
+	private function _check_var($var = NULL)
+	{
+		if ( is_null($var) ) {
+			throw new Exception("NULL reference pointer");	
+		}
+
+		if ( $this->BASE_SELECTOR_KEY_TYPE != gettype($var) ) {
+			throw new Exception ("Expected type is \"" . $this->BASE_SELECTOR_KEY_TYPE . "\" but \"" . gettype($var) . "\" is given. ");
+		}
+	}
+
 
 
 	private function _insert()
@@ -253,14 +321,6 @@ class MY_Model extends CI_Model {
 	{
 		# code...
 	}
-
-
-	public function _remove()
-	{
-		# code...
-	}
-
-
 
 
 
