@@ -8,14 +8,31 @@ class MY_Model extends CI_Model {
 	| -------------------------------------------------------------------
 	|
 	*/
-	// Default query field name.
-	const DEFAULT_CONDITION_KEY   = "isActive"; 
+	// // Default query field name.
+	// const DEFAULT_CONDITION_KEY   = "isActive"; 
 
-	// Default directory of Entities.
-	const DEFAULT_ENTITY_DIR      = "Entities"; 
+	// // Default directory of Entities.
+	// const DEFAULT_ENTITY_DIR      = "Entities"; 
 
-	// Default condition value for querying the default field name.
-	const DEFAULT_CONDITION_VALUE = TRUE; 
+	// // Default condition value for querying the default field name.
+	// const DEFAULT_CONDITION_VALUE = TRUE; 
+
+	// //
+	// const DEFAULT_SOFT_DELETE_KEY = "isActive";
+
+	private $_DEFAULTS = array(
+
+						"CONDITION_KEY"     => "isActive",
+						
+						"CONDITION_VALUE"   => TRUE,
+						
+						"ENTITY_DIR"        => "Entities",
+						
+						"SOFT_DELETE_KEY"   => "isActive",
+						
+						"SOFT_DELETE_VALUE" => FALSE
+
+				);
 
 	/*
 	| ----- End Default Dependencies ------------------------------------
@@ -30,20 +47,25 @@ class MY_Model extends CI_Model {
 	// 
 	private $_DOCTRINE;
 
-
 	//
 	//
 	protected $ENTITY_OBJECT;
 
 	//
 	//
-	protected $BASE_ENTITY_DIR = self::DEFAULT_ENTITY_DIR;
+	protected $BASE_ENTITY_DIR = $this->_DEFAULTS["ENTITY_DIR"];
 
-	//
-	//
-	protected $BASE_QUERY = array(self::DEFAULT_CONDITION_KEY => self::DEFAULT_CONDITION_VALUE);
+	/**
+	 * Override the BASE_QUERY by passing an array.
+	 * Ex: $this->BASE_QUERY = array("isGroupDependent" => FALSE)
+	 * @var array
+	 */
+	protected $BASE_QUERY = array( $this->_DEFAULTS["CONDITION_KEY"] => $this->_DEFAULTS["CONDITION_VALUE"] );
 
 
+	protected $BASE_SOFT_DELETE_KEY = $this->_DEFAULTS["SOFT_DELETE_KEY"];
+
+	protected $BASE_SOFT_DELETE_VALUE = $this->_DEFAULTS["SOFT_DELETE_VALUE"];
 
 
 	//
@@ -107,6 +129,7 @@ class MY_Model extends CI_Model {
 
 
 
+
 	/**
 	 * Save data to database. TOOOOOOOOOOOOOOOOOOOOO DRY.
 	 * @param  array  $data [description]
@@ -123,60 +146,101 @@ class MY_Model extends CI_Model {
 		}
 
 
+		if (! empty($data["id"])) {
+			return $this->_update($data);
+		}
+
+
 
 		// Set new Entities\Position object
-		$entry = new $this->ENTITY_OBJECT;
+		// $entry = new $this->ENTITY_OBJECT;
 
-		// Check if id field is present. Meaning, this action is for updating fields.
-		if (! empty($data["id"])) {
+		// // Check if id field is present. Meaning, this action is for updating fields.
+		// if (! empty($data["id"])) {
 
-			$entry = $this->find_by(array("id" => $data["id"]));
+		// 	$entry = $this->find_by(array("id" => $data["id"]));
 
-			// Return FALSE if found no item.
-			if (is_null($entry)) {
-				return FALSE;
-			}
-		}
+		// 	// Return FALSE if found no item.
+		// 	if (is_null($entry)) {
+		// 		return FALSE;
+		// 	}
+		// }
 
-		// Update the isActive from the passed data.
-		if(isset($data["isActive"])){
-			$entry->setIsActive($data["isActive"]);
-		}
+		// // Update the isActive from the passed data.
+		// if(isset($data["isActive"])){
+		// 	$entry->setIsActive($data["isActive"]);
+		// }
 
-		// Set/Update the title from the passed data
-		if (isset($data["title"])) {
-			$entry->setTitle($data["title"]);
-		}
+		// // Set/Update the title from the passed data
+		// if (isset($data["title"])) {
+		// 	$entry->setTitle($data["title"]);
+		// }
 
-		// Set/Update the limitation from the passed data
-		if (isset($data["limitation"])) {
-			$entry->setLimitation($data["limitation"]);
-		}
+		// // Set/Update the limitation from the passed data
+		// if (isset($data["limitation"])) {
+		// 	$entry->setLimitation($data["limitation"]);
+		// }
 
-		// Save to a new object
-		$this->_DOCTRINE->persist($entry);
+		// // Save to a new object
+		// $this->_DOCTRINE->persist($entry);
 
-		try {
+		// try {
 
-			// Save to database
-			$this->_DOCTRINE->flush();
+		// 	// Save to database
+		// 	$this->_DOCTRINE->flush();
 			
-		} catch (Exception $e) {
+		// } catch (Exception $e) {
 			
-			echo "error in model/entry/save";
-			exit();
+		// 	echo "error in model/entry/save";
+		// 	exit();
 
-		}
+		// }
 
-		// Successful database operation
-		return TRUE;
+		// // Successful database operation
+		// return TRUE;
 
 	}
 
 
+	public function soft_delete(int $id = NULL )
+	{
+
+		if (is_null($id)) {
+			return FALSE;
+		}
+
+		$item = $this->find_by(array("id" => $id));
+
+		$_method = "set" . humanize($this->BASE_SOFT_DELETE_KEY);
+
+		if (! method_exists($item, $_method)) {
+			return FALSE;
+		}
+
+		$item->$_method($this->BASE_SOFT_DELETE_VALUE);
+
+		return $this->_transact($item);
+
+	}
 
 
+	private function _transact($obj){
 
+		try {
+			
+			$this->_DOCTRINE->persist($obj);
+
+			$this->_DOCTRINE->flush();
+
+			return TRUE;
+
+		} catch (Exception $e) {
+			
+			
+
+		}
+
+	}
 
 
 	private function _insert()
