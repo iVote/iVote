@@ -72,15 +72,14 @@ class Positions extends Base_Controller {
 	public function edit($id)
 	{
 		// Fail Early Validation
-		if(!isset($id)) redirect("positions/");
+		if(! isset($id) ) redirect("positions", "location");
 		
 		// Get items via id field
 		$position = $this->Position->find_by(array("id" => $id));
 
 		// Fail Early if the query returns no item
-		if (is_null($position)) {
-			echo "error";
-			exit();
+		if ( is_null($position) ) {
+			redirect("positions", "location");
 		}
 
 		$data["edit"]         =	TRUE;
@@ -101,7 +100,7 @@ class Positions extends Base_Controller {
 	{
 		try {
 			
-			$response = $this->Position->soft_delete((int) $id);
+			$this->Position->soft_delete((int) $id);
 			
 		} catch (Exception $e) {
 
@@ -111,28 +110,7 @@ class Positions extends Base_Controller {
 
 		}
 			
-		// Fail Early Validation
-		// if(! isset($id)) redirect("positions/");
-
-		// // Get items via id field
-		// $position = $this->Position->find_by(array("id" => $id));
-
-		// // Fail Early if the query returns no item
-		// if (is_null($position)) {
-		// 	echo "error";
-		// 	exit();
-		// }
-
-		// $response = $this->Position->save(array("id" => $id, "isActive" => 0));
-
-		// If operation fails.
-		if (! $response) {
-			echo "error";
-			exit();
-		}
-
-		redirect("positions/", "location");
-		
+		redirect("positions", "location");	
 
 	}
 
@@ -144,13 +122,18 @@ class Positions extends Base_Controller {
 	// Page that handles the database transactions
 	public function submit()
 	{
-		// Get the response from the model
-		$response = $this->Position->save($this->input->post(NULL, TRUE));
 
-		// If operation fails
-		if (! $response){
-			echo "error";
+		try {
+			
+			// Get the response from the model
+			$this->Position->submit($this->input->post(NULL, TRUE));
+			
+		} catch (Exception $e) {
+			
+			echo $e->getMessage();
+
 			exit();
+
 		}
 
 		redirect("positions", "location");

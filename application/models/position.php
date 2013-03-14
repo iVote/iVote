@@ -13,6 +13,26 @@ class Position extends MY_Model {
 	}
 
 
+	public function submit($data)
+	{
+		// Check if we can see an entry from the database
+		$item = $this->find_by( array("title" => $data["title"]), FALSE);
+
+		if (! empty($item)) {
+
+			$this->save( array("id" => $item[0]->getId(), "limitation" => $data["limitation"], "is_active" => TRUE) );
+
+		} 
+
+		else {
+
+			$this->save($data);
+
+		}
+
+	}
+
+
 
 	/**
 	 * Used for bootstrapping / seeding database data
