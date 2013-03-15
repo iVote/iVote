@@ -118,10 +118,8 @@ class MY_Model extends CI_Model {
 	| Find specific content by users condition
 	|
 	*/
-	public function find_by($args = array(), $with_base = TRUE)
+	public function find_by($args = array(), $with_base = FALSE)
 	{
-
-
 		// Removed null value array keys
 		$args = array_filter($args);
 
