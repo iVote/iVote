@@ -8,9 +8,7 @@ function array_filter_recursive($haystack)
           $haystack[$key] = array_filter_recursive($haystack[$key]);
       }
 
-      if (empty($haystack[$key])) {
-          unset($haystack[$key]);
-      }
+      array_filter($haystack[$key], "strlen");
 
     }
 

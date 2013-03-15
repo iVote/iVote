@@ -24,14 +24,6 @@ class Positions extends Base_Controller {
 		$data["positions"]    = $this->Position->find_all();
 		$data["main_content"] =	"positions/index";
 
-		// $groups = $data["positions"]->getGroups();
-
-		// foreach ($groups as $key => $value) {
-		// 	echo "<pre>" . print_r($value, TRUE) . "</pre>";
-		// }
-		// // echo "<pre>" . print_r($data["positions"]->getGroups(), TRUE) . "</pre>";
-		// exit();
-
 		$this->load->view("admin/template", $data);
 	}
 
@@ -92,7 +84,7 @@ class Positions extends Base_Controller {
 			redirect("positions", "location");
 		}
 
-		$data["edit"]          =	TRUE;
+		$data["edit"]          = TRUE;
 		$data["position"]      = $position;
 		$data["groups"]        = $this->Group->find_all();
 		$data["active_groups"] = $this->Group->get_group_ids($position);

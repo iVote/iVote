@@ -39,11 +39,9 @@
 
 			<label class="checkbox">
 				<?php if (isset($edit)) {
-					$checked = FALSE;
-					
-					if (! is_null($active_groups)) {
-						$checked = in_array($value->getId(), $active_groups);
-					}
+
+					$checked = !is_null($active_groups) ? in_array($value->getId(), $active_groups) : FALSE;
+
 				} ?>
 				<?php echo form_checkbox("groups[]", $value->getId(), isset($edit) ? $checked : FALSE); ?>
 				<?php echo $value->getName(); ?>

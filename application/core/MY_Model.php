@@ -146,8 +146,6 @@ class MY_Model extends CI_Model {
 	*/
 	public function save($data = array(), $is_multiple = FALSE)
 	{
-		// echo "<pre>" . print_r($data, TRUE) . "</pre>";
-		// exit();
 
 		// Fail Early validation of array. 
 		// Removes all NULL, FALSE and Empty Strings but leaves 0 (zero) values.
@@ -340,6 +338,15 @@ class MY_Model extends CI_Model {
 			// CASE: What if the primary key is not Id?
 			if ($this->_DEFAULTS["SELECTOR_KEY"] == $key) {
 				continue;
+			}
+
+			if (is_array($value)) {
+					
+				foreach ($value as $key2 => $value2) {
+					// Call the dynamic Entity methods.
+					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
+				}
+
 			}
 
 			// Call the dynamic Entity methods.

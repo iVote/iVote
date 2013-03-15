@@ -15,57 +15,39 @@ class Position extends MY_Model {
 
 	public function submit($data)
 	{
+		$this->load->model("Group");
+
 		// Check if we can see an entry from the database
 		$item = $this->find_by( array("title" => $data["title"]), FALSE);
 
-		if (! empty($item)) {
-
-			$data["id"]        = $item[0]->getId();
-			$data["is_active"] = TRUE;
-
-			$this->save($data);
-
-		} 
-
-		else {
+		if (empty($item)) {
 			// Merge is_group_dependent condition to the base array.
-
-			$this->load->model("Group");
-
 			$data["is_group_dependent"] =  (int) FALSE;
+		} 
+		else {
+			$data["id"] = $item[0]->getId();
+		}
 
+		if (! empty($data["groups"])) {
+			
+			foreach ($data["groups"] as $key => $value) {
 
-			if (! empty($data["groups"])) {
-				
-				foreach ($data["groups"] as $key => $value) {
-					$groups[] = $this->Group->find_by( array("id" => $value));
-				}
-
-				$data["groups"] = $groups;
-
-				$data["is_group_dependent"] =  TRUE;
+				$groups[] = $this->Group->find_by( array("id" => $value));
 
 			}
 
-			$this->save($data);
+			$data["groups"] = $groups;
+
+			$data["is_group_dependent"] =  TRUE;
 
 		}
 
+		$data["is_active"] = TRUE;
+
+		$this->save($data);
+
 	}
 
-	// public function get_group_ids($obj)
-	// {
-	// 	$items = array();
-
-	// 	foreach ($obj as $key => $value) {
-			
-	// 		echo "<pre>" . print_r($value, TRUE) . "</pre>";
-	// 		exit();
-
-	// 	}
-
-	// 	return $items;
-	// }
 
 
 	/**
