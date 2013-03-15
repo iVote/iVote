@@ -20,13 +20,13 @@ class Position extends MY_Model {
 		// Check if we can see an entry from the database
 		$item = $this->find_by( array("title" => $data["title"]), FALSE);
 
-		if (empty($item)) {
+		if (!empty($item)) {
 			// Merge is_group_dependent condition to the base array.
-			$data["is_group_dependent"] =  (int) FALSE;
-		} 
-		else {
 			$data["id"] = $item[0]->getId();
-		}
+
+		} 
+		
+		$data["is_group_dependent"] =  (int) FALSE;
 
 		if (! empty($data["groups"])) {
 			
