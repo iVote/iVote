@@ -20,11 +20,32 @@ class Position extends MY_Model {
 
 		if (! empty($item)) {
 
-			$this->save( array("id" => $item[0]->getId(), "limitation" => $data["limitation"], "is_active" => TRUE) );
+			$data["id"]        = $item[0]->getId();
+			$data["is_active"] = TRUE;
+
+			$this->save($data);
 
 		} 
 
 		else {
+			// Merge is_group_dependent condition to the base array.
+
+			$this->load->model("Group");
+
+			$data["is_group_dependent"] =  (int) FALSE;
+
+
+			if (! empty($data["groups"])) {
+				
+				foreach ($data["groups"] as $key => $value) {
+					$groups[] = $this->Group->find_by( array("id" => $value));
+				}
+
+				$data["groups"] = $groups;
+
+				$data["is_group_dependent"] =  TRUE;
+
+			}
 
 			$this->save($data);
 
@@ -32,6 +53,19 @@ class Position extends MY_Model {
 
 	}
 
+	// public function get_group_ids($obj)
+	// {
+	// 	$items = array();
+
+	// 	foreach ($obj as $key => $value) {
+			
+	// 		echo "<pre>" . print_r($value, TRUE) . "</pre>";
+	// 		exit();
+
+	// 	}
+
+	// 	return $items;
+	// }
 
 
 	/**

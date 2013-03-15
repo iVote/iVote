@@ -75,7 +75,7 @@ class MY_Model extends CI_Model {
 		parent::__construct();
 		
 		// Load this helper to allow the use of humanize() method.
-		$this->load->helper(array("inflector", "string"));
+		$this->load->helper(array("inflector", "string", "array"));
 
 		
 		$this->BASE_QUERY             = array( camelize($this->_DEFAULTS["CONDITION_KEY"]) => $this->_DEFAULTS["CONDITION_VALUE"] );
@@ -146,9 +146,12 @@ class MY_Model extends CI_Model {
 	*/
 	public function save($data = array(), $is_multiple = FALSE)
 	{
+		// echo "<pre>" . print_r($data, TRUE) . "</pre>";
+		// exit();
+
 		// Fail Early validation of array. 
 		// Removes all NULL, FALSE and Empty Strings but leaves 0 (zero) values.
-		$data = array_filter($data, 'strlen');
+		$data = array_filter_recursive($data);
 
 		// Throw exception if the parameter is empty.
 		if ( empty($data) ) {
@@ -282,12 +285,28 @@ class MY_Model extends CI_Model {
 	private function _insert($obj)
 	{
 
+		// Adding default value for the row's active state
+		// e.g : is_active = TRUE
+		$obj = array_merge($obj, $this->BASE_QUERY);
+
+		// Remove any instances of submit button
+		unset($obj["submit"]);
+
 		// Initialize new instance of the Entity Object
 		$entry = new $this->ENTITY_OBJECT;
 
-
 		foreach ($obj as $key => $value) {
 		
+			// If the index is an array.
+			// Meaning this is an association key.
+			if (is_array($value)) {
+					
+				foreach ($value as $key2 => $value2) {
+					// Call the dynamic Entity methods.
+					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
+				}
+
+			}
 			// Call the dynamic Entity methods.
 			call_user_func_array( array($entry, "set" . ucfirst(camelize($key))), array($value) );
 			

@@ -8,7 +8,7 @@ class Positions extends Base_Controller {
 
 		// Load the Position Model to be used by the whole controller.
 		// CodeIgniter Function
-		$this->load->model("Position");
+		$this->load->model(array("Position", "Group"));
 
 	}
 
@@ -23,6 +23,14 @@ class Positions extends Base_Controller {
 	{
 		$data["positions"]    = $this->Position->find_all();
 		$data["main_content"] =	"positions/index";
+
+		// $groups = $data["positions"]->getGroups();
+
+		// foreach ($groups as $key => $value) {
+		// 	echo "<pre>" . print_r($value, TRUE) . "</pre>";
+		// }
+		// // echo "<pre>" . print_r($data["positions"]->getGroups(), TRUE) . "</pre>";
+		// exit();
 
 		$this->load->view("admin/template", $data);
 	}
@@ -54,7 +62,9 @@ class Positions extends Base_Controller {
 	 */
 	public function add()
 	{
-		$data["main_content"] = "/positions/add";
+		$data["groups"] = $this->Group->find_all();
+
+		$data["main_content"] = "positions/add";
 
 		$this->load->view("admin/template", $data);
 	}
@@ -82,9 +92,11 @@ class Positions extends Base_Controller {
 			redirect("positions", "location");
 		}
 
-		$data["edit"]         =	TRUE;
-		$data["position"]     = $position;
-		$data["main_content"] = "positions/edit";
+		$data["edit"]          =	TRUE;
+		$data["position"]      = $position;
+		$data["groups"]        = $this->Group->find_all();
+		$data["active_groups"] = $this->Group->get_group_ids($position);
+		$data["main_content"]  = "positions/edit";
 
 		$this->load->view("admin/template", $data);
 

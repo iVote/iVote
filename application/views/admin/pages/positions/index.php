@@ -36,7 +36,15 @@
 			<tr>
 				<td> <?php echo $value->getTitle(); ?> </td> 
 				<td> <?php echo $value->getLimitation(); ?> </td>
-				<td> <?php echo ""; ?></td>
+				<td> 
+				<?php 
+
+				foreach ($value->getGroups() as $key => $group) {
+					echo $group->getName() . " ";
+				}
+
+				?>
+				</td>
 				<td> </td>
 				<td> <?php echo anchor('positions/edit/' . $value->getId(), 'Edit');?> </td>
 				<td> <?php echo anchor('positions/remove/' . $value->getId(), 'Remove');?> </td>
