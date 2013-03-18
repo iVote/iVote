@@ -308,6 +308,7 @@ class MY_Model extends CI_Model {
 			// Call the dynamic Entity methods.
 			call_user_func_array( array($entry, "set" . ucfirst(camelize($key))), array($value) );
 			
+			continue;
 		}
 
 		$this->_DOCTRINE->persist($entry);
@@ -344,12 +345,22 @@ class MY_Model extends CI_Model {
 			}
 
 			if (is_array($value)) {
-					
+
+				//get existing associate records.
+				$get_associate_records = call_user_func_array( array($item, "get" . ucfirst(singular(camelize($key))) . 's'), array());
+
+				if ($get_associate_records->count()) {
+
+					//remove all existing associate records.
+					$this->_delete_associate_records($get_associate_records);
+				}
+				 
 				foreach ($value as $key2 => $value2) {
 					// Call the dynamic Entity methods.
 					call_user_func_array( array($item, "add" . ucfirst(singular(camelize($key)))), array($value2) );
 				}
-
+				
+				continue;
 			}
 
 			// Call the dynamic Entity methods.
@@ -358,6 +369,22 @@ class MY_Model extends CI_Model {
 		}
 
 		$this->_DOCTRINE->persist($item);
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Private ::  _delete_records
+	| -------------------------------------------------------------------
+	|
+	*/
+	private function _delete_associate_records($obj)
+	{
+		foreach ($obj as $key => $value) {
+			$obj->removeElement($value);
+		}
+
+		$this->flush();
 	}
 
 
