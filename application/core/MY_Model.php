@@ -21,7 +21,9 @@ class MY_Model extends CI_Model {
 						
 						"SOFT_DELETE_VALUE" => FALSE,
 
-						"SELECTOR_KEY"			=> "id"
+						"SELECTOR_KEY"		=> "id",
+
+						"HAS_ASSOCIATE"		=> FALSE
 
 						// "SELECTOR_KEY_TYPE" => "integer"
 
@@ -59,6 +61,12 @@ class MY_Model extends CI_Model {
 	// Base selector key  to be used for querying
 	protected $BASE_SELECTOR_KEY;
 
+	// To Check if entiry has associate entity
+	protected $BASE_HAS_ASSOCIATE;
+
+	// To Check if entiry has associate table
+	protected $BASE_ASSOCIATE_ENTITY;
+
 	// Type of the base selector key for validation purposes.
 	// protected $BASE_SELECTOR_KEY_TYPE;
 
@@ -88,11 +96,50 @@ class MY_Model extends CI_Model {
 		
 		$this->BASE_SELECTOR_KEY      = $this->_DEFAULTS["SELECTOR_KEY"];
 
+		$this->BASE_HAS_ASSOCIATE     = $this->_DEFAULTS["HAS_ASSOCIATE"];
+
 		// $this->BASE_SELECTOR_KEY_TYPE = $this->_DEFAULTS["SELECTOR_KEY_TYPE"];
 
 	}
 
 
+	/*
+	| -------------------------------------------------------------------
+	| Init
+	| -------------------------------------------------------------------
+	|	Initialize Doctrine. 
+	| This is a necessary method.
+	|
+	*/
+	protected function init($doctrine)
+	{
+		$this->_set_entity_object();
+
+		// Set Entity Object to variable _EM for shorter Entity Manager Call.
+		$this->_EM       = $doctrine->getRepository($this->ENTITY_OBJECT);
+
+		// Save $doctrine to _DOCTRINE;
+		$this->_DOCTRINE = $doctrine;
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Private ::  _set_entity_object
+	| -------------------------------------------------------------------
+	| Guess the Entity via Model name and use it as Doctrine Entity Object
+	|
+	*/
+	private function _set_entity_object()
+	{
+		if (! isset($this->ENTITY_OBJECT)) {
+
+			// Set the name of the Entity to be used through out the model.
+		$this->ENTITY_OBJECT = $this->BASE_ENTITY_DIR . "\\" . humanize(get_class($this));
+
+		}
+
+	}
 
 
 	/*
@@ -106,9 +153,6 @@ class MY_Model extends CI_Model {
 	{
 		return $this->_EM->findBy($this->BASE_QUERY);
 	}
-
-
-
 
 
 	/*
@@ -134,7 +178,6 @@ class MY_Model extends CI_Model {
 		// Return one row if id condition is present. Else, all items that satisfy the condition.
 		return !empty($args[$this->BASE_SELECTOR_KEY]) ? $this->_EM->findOneBy($condition) : $this->_EM->findBy($condition);
 	}
-
 
 
 	/*
@@ -172,105 +215,6 @@ class MY_Model extends CI_Model {
 		}
 
 	}
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Public :: soft_delete
-	| -------------------------------------------------------------------
-	|
-	*/
-	public function soft_delete( $key = NULL, $is_multiple = FALSE )
-	{
-		// TODO: To be improved.
-		$this->_check_var($key);
-
-		// 
-		$item = $this->find_by(array($this->BASE_SELECTOR_KEY => $key));
-
-		// Check the no record is found.
-		if ( is_null($item)) { throw new Exception("No entry found"); }
-
-		// Call the dynamic Entity method.
-		call_user_func_array( array($item, "set" . ucfirst(camelize($this->BASE_SOFT_DELETE_KEY))), array($this->BASE_SOFT_DELETE_VALUE));
-
-		$this->_DOCTRINE->persist($item);
-
-		if (! $is_multiple) {
-			$this->flush();
-		}
-
-	}
-
-
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Init
-	| -------------------------------------------------------------------
-	|	Initialize Doctrine. 
-	| This is a necessary method.
-	|
-	*/
-	protected function init($doctrine)
-	{
-		$this->_set_entity_object();
-
-		// Set Entity Object to variable _EM for shorter Entity Manager Call.
-		$this->_EM       = $doctrine->getRepository($this->ENTITY_OBJECT);
-
-		// Save $doctrine to _DOCTRINE;
-		$this->_DOCTRINE = $doctrine;
-	}
-
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Protected ::  flush
-	| -------------------------------------------------------------------
-	| Save the persistent data to the Database.
-	|
-	*/
-	protected function flush() 
-	{
-		try {	
-
-			$this->_DOCTRINE->flush();
-
-		} catch (Exception $e) { throw $e; }
-
-		return TRUE;
-
-	}
-
-
-
-
-
-
-
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Private ::  _check_var
-	| -------------------------------------------------------------------
-	| Check the parameter value that will be used for database processes.
-	|
-	*/
-	private function _check_var($var = NULL)
-	{
-		if ( is_null($var) ) {
-			throw new Exception("NULL reference pointer");	
-		}
-
-		// if ( $this->BASE_SELECTOR_KEY_TYPE != gettype($var) ) {
-		// 	throw new Exception ("Expected type is \"" . $this->BASE_SELECTOR_KEY_TYPE . "\" but \"" . gettype($var) . "\" is given. ");
-		// }
-	}
-
 
 
 	/*
@@ -333,6 +277,13 @@ class MY_Model extends CI_Model {
 		// Remove any instances of submit button
 		unset($obj["submit"]);
 
+		// check if $this has associate entity
+		if($this->BASE_HAS_ASSOCIATE) {
+
+			//remove all existing associate records.
+			$this->_delete_associate_records($item);
+		}
+
 		// Loop through parameters
 		foreach ($obj as $key => $value) {
 
@@ -345,15 +296,6 @@ class MY_Model extends CI_Model {
 			}
 
 			if (is_array($value)) {
-
-				//get existing associate records.
-				$get_associate_records = call_user_func_array( array($item, "get" . ucfirst(singular(camelize($key))) . 's'), array());
-
-				if ($get_associate_records->count()) {
-
-					//remove all existing associate records.
-					$this->_delete_associate_records($get_associate_records);
-				}
 				 
 				foreach ($value as $key2 => $value2) {
 					// Call the dynamic Entity methods.
@@ -374,14 +316,49 @@ class MY_Model extends CI_Model {
 
 	/*
 	| -------------------------------------------------------------------
+	| Public :: soft_delete
+	| -------------------------------------------------------------------
+	|
+	*/
+	public function soft_delete( $key = NULL, $is_multiple = FALSE )
+	{
+		// TODO: To be improved.
+		$this->_check_var($key);
+
+		// 
+		$item = $this->find_by(array($this->BASE_SELECTOR_KEY => $key));
+
+		// Check the no record is found.
+		if ( is_null($item)) { throw new Exception("No entry found"); }
+
+		// Call the dynamic Entity method.
+		call_user_func_array( array($item, "set" . ucfirst(camelize($this->BASE_SOFT_DELETE_KEY))), array($this->BASE_SOFT_DELETE_VALUE));
+
+		$this->_DOCTRINE->persist($item);
+
+		if (! $is_multiple) {
+			$this->flush();
+		}
+
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
 	| Private ::  _delete_records
 	| -------------------------------------------------------------------
 	|
 	*/
 	private function _delete_associate_records($obj)
 	{
-		foreach ($obj as $key => $value) {
-			$obj->removeElement($value);
+		//get existing associate records.
+		$get_associate_records = call_user_func_array( array($obj, "get" . ucfirst(camelize($this->BASE_ASSOCIATE_ENTITY))), array());
+
+		if (!$get_associate_records->count())
+			return;
+
+		foreach ($get_associate_records as $key => $value) {
+			$get_associate_records->removeElement($value);
 		}
 
 		$this->flush();
@@ -390,20 +367,40 @@ class MY_Model extends CI_Model {
 
 	/*
 	| -------------------------------------------------------------------
-	| Private ::  _set_entity_object
+	| Protected ::  flush
 	| -------------------------------------------------------------------
-	| Guess the Entity via Model name and use it as Doctrine Entity Object
+	| Save the persistent data to the Database.
 	|
 	*/
-	private function _set_entity_object()
+	protected function flush() 
 	{
-		if (! isset($this->ENTITY_OBJECT)) {
+		try {	
 
-			// Set the name of the Entity to be used through out the model.
-		$this->ENTITY_OBJECT = $this->BASE_ENTITY_DIR . "\\" . humanize(get_class($this));
+			$this->_DOCTRINE->flush();
 
+		} catch (Exception $e) { throw $e; }
+
+		return TRUE;
+
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Private ::  _check_var
+	| -------------------------------------------------------------------
+	| Check the parameter value that will be used for database processes.
+	|
+	*/
+	private function _check_var($var = NULL)
+	{
+		if ( is_null($var) ) {
+			throw new Exception("NULL reference pointer");	
 		}
 
+		// if ( $this->BASE_SELECTOR_KEY_TYPE != gettype($var) ) {
+		// 	throw new Exception ("Expected type is \"" . $this->BASE_SELECTOR_KEY_TYPE . "\" but \"" . gettype($var) . "\" is given. ");
+		// }
 	}
 
 
