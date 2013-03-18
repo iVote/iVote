@@ -1,0 +1,20 @@
+{
+	"folders":
+	[
+		{
+			"path": "/D/Documents/GitHub/iVote"
+		},
+		{
+			"path": "/D/Documents/GitHub/iVote/application/core/"
+		},
+		{
+			"path": "/D/Documents/GitHub/iVote/application/models/"
+		},
+		{
+			"path": "/D/Documents/GitHub/iVote/application/controllers/"
+		},
+		{
+			"path": "/D/Documents/GitHub/iVote/application/views/"
+		}
+	]
+}

@@ -1,0 +1,7 @@
+Entities\User:
+  type: entity
+  table: users
+  columns:
+    id:
+      type: integer
+      primary: true
