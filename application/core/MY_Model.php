@@ -149,7 +149,7 @@ class MY_Model extends CI_Model {
 
 		// Fail Early validation of array. 
 		// Removes all NULL, FALSE and Empty Strings but leaves 0 (zero) values.
-		$data = array_filter_recursive($data);
+		//$data = array_filter_recursive($data);
 
 		// Throw exception if the parameter is empty.
 		if ( empty($data) ) {
@@ -285,7 +285,7 @@ class MY_Model extends CI_Model {
 
 		// Adding default value for the row's active state
 		// e.g : is_active = TRUE
-		$obj = array_merge($obj, $this->BASE_QUERY);
+		//$obj = array_merge($obj, $this->BASE_QUERY);
 
 		// Remove any instances of submit button
 		unset($obj["submit"]);
@@ -329,6 +329,9 @@ class MY_Model extends CI_Model {
 	
 		$this->_check_var($item);
 
+		// Remove any instances of submit button
+		unset($obj["submit"]);
+
 		// Loop through parameters
 		foreach ($obj as $key => $value) {
 
@@ -344,7 +347,7 @@ class MY_Model extends CI_Model {
 					
 				foreach ($value as $key2 => $value2) {
 					// Call the dynamic Entity methods.
-					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
+					call_user_func_array( array($item, "add" . ucfirst(singular(camelize($key)))), array($value2) );
 				}
 
 			}
@@ -365,16 +368,16 @@ class MY_Model extends CI_Model {
 	| Guess the Entity via Model name and use it as Doctrine Entity Object
 	|
 	*/
-  private function _set_entity_object()
-  {
-  	if (! isset($this->ENTITY_OBJECT)) {
+	private function _set_entity_object()
+	{
+		if (! isset($this->ENTITY_OBJECT)) {
 
-  		// Set the name of the Entity to be used through out the model.
-    	$this->ENTITY_OBJECT = $this->BASE_ENTITY_DIR . "\\" . humanize(get_class($this));
+			// Set the name of the Entity to be used through out the model.
+		$this->ENTITY_OBJECT = $this->BASE_ENTITY_DIR . "\\" . humanize(get_class($this));
 
-  	}
+		}
 
-  }
+	}
 
 
 	/*

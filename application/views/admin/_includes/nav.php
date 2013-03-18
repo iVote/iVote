@@ -4,6 +4,7 @@
 	    <a class="brand" href="#">Administrator</a>
 	    <ul class="nav">
 	      <li><a href="<?php echo base_url(); ?>">Dashboard</a></li>
+	      <li><?php echo anchor('groups', 'Groups'); ?></li>
 	      <li><?php echo anchor('positions', 'Positions'); ?></li>
 	      <li class="dropdown">
 	      	<a class="dropdown-toggle" data-toggle="dropdown" href="#">

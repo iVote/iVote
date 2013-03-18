@@ -25,9 +25,9 @@ class Group
     private $shortDescription;
 
     /**
-     * @var boolean $is_active
+     * @var boolean $isActive
      */
-    private $is_active;
+    private $isActive;
 
 
     /**
@@ -85,30 +85,24 @@ class Group
     }
 
     /**
-     * Set is_active
+     * Set isActive
      *
      * @param boolean $isActive
      * @return Group
      */
     public function setIsActive($isActive)
     {
-        $this->is_active = $isActive;
+        $this->isActive = $isActive;
         return $this;
     }
 
     /**
-     * Get is_active
+     * Get isActive
      *
      * @return boolean 
      */
     public function getIsActive()
     {
-        return $this->is_active;
+        return $this->isActive;
     }
-    /**
-     * @var boolean $isActive
-     */
-    private $isActive;
-
-
 }
