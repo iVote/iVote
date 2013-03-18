@@ -1,5 +1,0 @@
-Entities\Course:
-  columns:
-    id:
-      type: integer
-      primary: true
