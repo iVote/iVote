@@ -21,7 +21,9 @@ class MY_Model extends CI_Model {
 						
 						"SOFT_DELETE_VALUE" => FALSE,
 
-						"SELECTOR_KEY"			=> "id"
+						"SELECTOR_KEY"		=> "id",
+
+						"HAS_ASSOCIATE"		=> FALSE
 
 						// "SELECTOR_KEY_TYPE" => "integer"
 
@@ -59,6 +61,12 @@ class MY_Model extends CI_Model {
 	// Base selector key  to be used for querying
 	protected $BASE_SELECTOR_KEY;
 
+	// To Check if entiry has associate entity
+	protected $BASE_HAS_ASSOCIATE;
+
+	// To Check if entiry has associate table
+	protected $BASE_ASSOCIATE_ENTITY;
+
 	// Type of the base selector key for validation purposes.
 	// protected $BASE_SELECTOR_KEY_TYPE;
 
@@ -88,11 +96,50 @@ class MY_Model extends CI_Model {
 		
 		$this->BASE_SELECTOR_KEY      = $this->_DEFAULTS["SELECTOR_KEY"];
 
+		$this->BASE_HAS_ASSOCIATE     = $this->_DEFAULTS["HAS_ASSOCIATE"];
+
 		// $this->BASE_SELECTOR_KEY_TYPE = $this->_DEFAULTS["SELECTOR_KEY_TYPE"];
 
 	}
 
 
+	/*
+	| -------------------------------------------------------------------
+	| Init
+	| -------------------------------------------------------------------
+	|	Initialize Doctrine. 
+	| This is a necessary method.
+	|
+	*/
+	protected function init($doctrine)
+	{
+		$this->_set_entity_object();
+
+		// Set Entity Object to variable _EM for shorter Entity Manager Call.
+		$this->_EM       = $doctrine->getRepository($this->ENTITY_OBJECT);
+
+		// Save $doctrine to _DOCTRINE;
+		$this->_DOCTRINE = $doctrine;
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Private ::  _set_entity_object
+	| -------------------------------------------------------------------
+	| Guess the Entity via Model name and use it as Doctrine Entity Object
+	|
+	*/
+	private function _set_entity_object()
+	{
+		if (! isset($this->ENTITY_OBJECT)) {
+
+			// Set the name of the Entity to be used through out the model.
+		$this->ENTITY_OBJECT = $this->BASE_ENTITY_DIR . "\\" . humanize(get_class($this));
+
+		}
+
+	}
 
 
 	/*
@@ -106,9 +153,6 @@ class MY_Model extends CI_Model {
 	{
 		return $this->_EM->findBy($this->BASE_QUERY);
 	}
-
-
-
 
 
 	/*
@@ -136,7 +180,6 @@ class MY_Model extends CI_Model {
 	}
 
 
-
 	/*
 	| -------------------------------------------------------------------
 	| Public :: save
@@ -149,7 +192,7 @@ class MY_Model extends CI_Model {
 
 		// Fail Early validation of array. 
 		// Removes all NULL, FALSE and Empty Strings but leaves 0 (zero) values.
-		$data = array_filter_recursive($data);
+		//$data = array_filter_recursive($data);
 
 		// Throw exception if the parameter is empty.
 		if ( empty($data) ) {
@@ -171,6 +214,103 @@ class MY_Model extends CI_Model {
 			$this->flush();
 		}
 
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Private ::  _insert
+	| -------------------------------------------------------------------
+	| Prepare New Object.
+	|
+	*/
+	private function _insert($obj)
+	{
+
+		// Adding default value for the row's active state
+		// e.g : is_active = TRUE
+		//$obj = array_merge($obj, $this->BASE_QUERY);
+
+		// Remove any instances of submit button
+		unset($obj["submit"]);
+
+		// Initialize new instance of the Entity Object
+		$entry = new $this->ENTITY_OBJECT;
+
+		foreach ($obj as $key => $value) {
+		
+			// If the index is an array.
+			// Meaning this is an association key.
+			if (is_array($value)) {
+					
+				foreach ($value as $key2 => $value2) {
+					// Call the dynamic Entity methods.
+					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
+				}
+
+			}
+			// Call the dynamic Entity methods.
+			call_user_func_array( array($entry, "set" . ucfirst(camelize($key))), array($value) );
+			
+			continue;
+		}
+
+		$this->_DOCTRINE->persist($entry);
+
+	}
+
+
+	/*
+	| -------------------------------------------------------------------
+	| Private ::  _update
+	| -------------------------------------------------------------------
+	| Prepare Update Object.
+	|
+	*/
+	private function _update($obj)
+	{
+
+		$item = $this->find_by( array($this->BASE_SELECTOR_KEY => $obj[$this->BASE_SELECTOR_KEY] ));
+	
+		$this->_check_var($item);
+
+		// Remove any instances of submit button
+		unset($obj["submit"]);
+
+		// check if $this has associate entity
+		if($this->BASE_HAS_ASSOCIATE) {
+
+			//remove all existing associate records.
+			$this->_delete_associate_records($item);
+		}
+
+		// Loop through parameters
+		foreach ($obj as $key => $value) {
+
+			// Skip if the current parameter is ID 
+			// Because, there is no setId() method.
+			// TODO: To be improve. 
+			// CASE: What if the primary key is not Id?
+			if ($this->_DEFAULTS["SELECTOR_KEY"] == $key) {
+				continue;
+			}
+
+			if (is_array($value)) {
+				 
+				foreach ($value as $key2 => $value2) {
+					// Call the dynamic Entity methods.
+					call_user_func_array( array($item, "add" . ucfirst(singular(camelize($key)))), array($value2) );
+				}
+				
+				continue;
+			}
+
+			// Call the dynamic Entity methods.
+			call_user_func_array( array($item, "set" . ucfirst(camelize($key))), array($value) );
+
+		}
+
+		$this->_DOCTRINE->persist($item);
 	}
 
 
@@ -203,27 +343,26 @@ class MY_Model extends CI_Model {
 	}
 
 
-
-
 	/*
 	| -------------------------------------------------------------------
-	| Init
+	| Private ::  _delete_records
 	| -------------------------------------------------------------------
-	|	Initialize Doctrine. 
-	| This is a necessary method.
 	|
 	*/
-	protected function init($doctrine)
+	private function _delete_associate_records($obj)
 	{
-		$this->_set_entity_object();
+		//get existing associate records.
+		$get_associate_records = call_user_func_array( array($obj, "get" . ucfirst(camelize($this->BASE_ASSOCIATE_ENTITY))), array());
 
-		// Set Entity Object to variable _EM for shorter Entity Manager Call.
-		$this->_EM       = $doctrine->getRepository($this->ENTITY_OBJECT);
+		if (!$get_associate_records->count())
+			return;
 
-		// Save $doctrine to _DOCTRINE;
-		$this->_DOCTRINE = $doctrine;
+		foreach ($get_associate_records as $key => $value) {
+			$get_associate_records->removeElement($value);
+		}
+
+		$this->flush();
 	}
-
 
 
 	/*
@@ -246,13 +385,6 @@ class MY_Model extends CI_Model {
 	}
 
 
-
-
-
-
-
-
-
 	/*
 	| -------------------------------------------------------------------
 	| Private ::  _check_var
@@ -270,111 +402,6 @@ class MY_Model extends CI_Model {
 		// 	throw new Exception ("Expected type is \"" . $this->BASE_SELECTOR_KEY_TYPE . "\" but \"" . gettype($var) . "\" is given. ");
 		// }
 	}
-
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Private ::  _insert
-	| -------------------------------------------------------------------
-	| Prepare New Object.
-	|
-	*/
-	private function _insert($obj)
-	{
-
-		// Adding default value for the row's active state
-		// e.g : is_active = TRUE
-		$obj = array_merge($obj, $this->BASE_QUERY);
-
-		// Remove any instances of submit button
-		unset($obj["submit"]);
-
-		// Initialize new instance of the Entity Object
-		$entry = new $this->ENTITY_OBJECT;
-
-		foreach ($obj as $key => $value) {
-		
-			// If the index is an array.
-			// Meaning this is an association key.
-			if (is_array($value)) {
-					
-				foreach ($value as $key2 => $value2) {
-					// Call the dynamic Entity methods.
-					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
-				}
-
-			}
-			// Call the dynamic Entity methods.
-			call_user_func_array( array($entry, "set" . ucfirst(camelize($key))), array($value) );
-			
-		}
-
-		$this->_DOCTRINE->persist($entry);
-
-	}
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Private ::  _update
-	| -------------------------------------------------------------------
-	| Prepare Update Object.
-	|
-	*/
-	private function _update($obj)
-	{
-
-		$item = $this->find_by( array($this->BASE_SELECTOR_KEY => $obj[$this->BASE_SELECTOR_KEY] ));
-	
-		$this->_check_var($item);
-
-		// Loop through parameters
-		foreach ($obj as $key => $value) {
-
-			// Skip if the current parameter is ID 
-			// Because, there is no setId() method.
-			// TODO: To be improve. 
-			// CASE: What if the primary key is not Id?
-			if ($this->_DEFAULTS["SELECTOR_KEY"] == $key) {
-				continue;
-			}
-
-			if (is_array($value)) {
-					
-				foreach ($value as $key2 => $value2) {
-					// Call the dynamic Entity methods.
-					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
-				}
-
-			}
-
-			// Call the dynamic Entity methods.
-			call_user_func_array( array($item, "set" . ucfirst(camelize($key))), array($value) );
-
-		}
-
-		$this->_DOCTRINE->persist($item);
-	}
-
-
-	/*
-	| -------------------------------------------------------------------
-	| Private ::  _set_entity_object
-	| -------------------------------------------------------------------
-	| Guess the Entity via Model name and use it as Doctrine Entity Object
-	|
-	*/
-  private function _set_entity_object()
-  {
-  	if (! isset($this->ENTITY_OBJECT)) {
-
-  		// Set the name of the Entity to be used through out the model.
-    	$this->ENTITY_OBJECT = $this->BASE_ENTITY_DIR . "\\" . humanize(get_class($this));
-
-  	}
-
-  }
 
 
 	/*

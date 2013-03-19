@@ -20,6 +20,25 @@ class Group extends MY_Model {
 		return $items;
 	}
 
+	public function submit($data)
+	{
+		$this->load->model("Group");
+
+		// Check if we can see an entry from the database
+		$item = $this->find_by( array("name" => $data["name"]), FALSE);
+
+		if (!empty($item)) {
+			// Add id / primary key to the array
+			$data["id"] = $item[0]->getId();
+
+		} 
+
+		$data["is_active"] = TRUE;
+
+		$this->save($data);
+
+	}
+
 }
 
 /* End of file group.php */

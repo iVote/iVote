@@ -10,6 +10,11 @@ class Position extends MY_Model {
 		// Initialize Doctrine in the Parent Class.
 		$this->init($this->doctrine->em);
 
+		// Defining that $this entity has associate entity
+		$this->BASE_HAS_ASSOCIATE = TRUE;
+
+		// Set the associate entity
+		$this->BASE_ASSOCIATE_ENTITY = "groups";
 	}
 
 
