@@ -1,0 +1,25 @@
+Entities\Member:
+  type: entity
+  table: members
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    name:
+      type: string
+      length: 255
+      nullable: false
+    shortDescription:
+      type: string
+      length: 255
+      nullable: false
+      column: short_description
+    isActive:
+      type: boolean
+      nullable: false
+      column: is_active
+  manyToMany:
+    groups:
+      targetEntity: Entities\Group

@@ -1,14 +1,14 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Groups extends Base_Controller {
+class Members extends Base_Controller {
 	
 	public function __construct()
 	{
 		parent::__construct();
 
-		// Load the Group Model to be used by the whole controller.
+		// Load the Member Model to be used by the whole controller.
 		// CodeIgniter Function
-		$this->load->model("Group");
+		$this->load->model(array("Member", "Group"));
 
 	}
 
@@ -21,8 +21,8 @@ class Groups extends Base_Controller {
 	 */
 	public function index()
 	{
-		$data["groups"]    = $this->Group->find_all();
-		$data["main_content"] =	"groups/index";
+		$data["members"]    = $this->Member->find_all();
+		$data["main_content"] =	"members/index";
 
 		$this->load->view("admin/template", $data);
 	}
@@ -39,8 +39,8 @@ class Groups extends Base_Controller {
 	{
 		$request = array("name" => $this->input->get("search", TRUE));
 
-		$data["groups"]    = $this->Nember->find_by($request);
-		$data["main_content"] =	"groups/index";
+		$data["members"]    = $this->Member->find_by($request);
+		$data["main_content"] =	"members/index";
 
 		$this->load->view("admin/template", $data);
 	}
@@ -54,7 +54,9 @@ class Groups extends Base_Controller {
 	 */
 	public function add()
 	{
-		$data["main_content"] = "groups/add";
+		$data["groups"] = $this->Group->find_all();
+
+		$data["main_content"] = "members/add";
 
 		$this->load->view("admin/template", $data);
 	}
@@ -72,19 +74,21 @@ class Groups extends Base_Controller {
 	public function edit($id)
 	{
 		// Fail Early Validation
-		if(! isset($id) ) redirect("groups", "location");
+		if(! isset($id) ) redirect("members", "location");
 		
 		// Get items via id field
-		$group = $this->Group->find_by(array("id" => $id));
+		$member = $this->Member->find_by(array("id" => $id));
 
 		// Fail Early if the query returns no item
-		if ( is_null($group) ) {
-			redirect("groups", "location");
+		if ( is_null($member) ) {
+			redirect("members", "location");
 		}
 
 		$data["edit"]          = TRUE;
-		$data["group"]      = $group;
-		$data["main_content"]  = "groups/edit";
+		$data["member"]		   = $member;
+		$data["groups"]        = $this->Group->find_all();
+		$data["active_groups"] = $this->Group->get_group_ids($member);
+		$data["main_content"]  = "members/edit";
 
 		$this->load->view("admin/template", $data);
 
@@ -100,7 +104,7 @@ class Groups extends Base_Controller {
 	{
 		try {
 			
-			$this->Group->soft_delete((int) $id);
+			$this->Member->soft_delete((int) $id);
 			
 		} catch (Exception $e) {
 
@@ -110,7 +114,7 @@ class Groups extends Base_Controller {
 
 		}
 			
-		redirect("groups", "location");	
+		redirect("members", "location");	
 
 	}
 
@@ -126,7 +130,7 @@ class Groups extends Base_Controller {
 		try {
 			
 			// Get the response from the model
-			$this->Group->submit($this->input->post(NULL, TRUE));
+			$this->Member->submit($this->input->post(NULL, TRUE));
 			
 		} catch (Exception $e) {
 			
@@ -136,7 +140,7 @@ class Groups extends Base_Controller {
 
 		}
 
-		redirect("groups", "location");
+		redirect("members", "location");
 	}
 
 
@@ -147,13 +151,13 @@ class Groups extends Base_Controller {
 	// Bootstrap page
 	public function bootstrap()
 	{
-		$this->load->model("Group");
-		$response = $this->Group->bootstrap();
+		$this->load->model("Member");
+		$response = $this->Member->bootstrap();
 
 		echo $response ? "Bootstrap successful!" : "Failed";
 	}
 
 }
 
-/* End of file groups.php */
-/* Location: ./application/controllers/groups.php */
+/* End of file positions.php */
+/* Location: ./application/controllers/positions.php */

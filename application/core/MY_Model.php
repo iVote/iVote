@@ -247,12 +247,10 @@ class MY_Model extends CI_Model {
 					// Call the dynamic Entity methods.
 					call_user_func_array( array($entry, "add" . ucfirst(singular(camelize($key)))), array($value2) );
 				}
-
+				continue;
 			}
 			// Call the dynamic Entity methods.
 			call_user_func_array( array($entry, "set" . ucfirst(camelize($key))), array($value) );
-			
-			continue;
 		}
 
 		$this->_DOCTRINE->persist($entry);
