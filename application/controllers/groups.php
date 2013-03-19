@@ -39,7 +39,7 @@ class Groups extends Base_Controller {
 	{
 		$request = array("name" => $this->input->get("search", TRUE));
 
-		$data["groups"]    = $this->Nember->find_by($request);
+		$data["groups"]    = $this->Group->find_by($request);
 		$data["main_content"] =	"groups/index";
 
 		$this->load->view("admin/template", $data);
