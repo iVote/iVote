@@ -21,9 +21,7 @@ class MY_Model extends CI_Model {
 						
 						"SOFT_DELETE_VALUE" => FALSE,
 
-						"SELECTOR_KEY"		=> "id",
-
-						"HAS_ASSOCIATE"		=> FALSE
+						"SELECTOR_KEY"		=> "id"
 
 						// "SELECTOR_KEY_TYPE" => "integer"
 
@@ -61,11 +59,12 @@ class MY_Model extends CI_Model {
 	// Base selector key  to be used for querying
 	protected $BASE_SELECTOR_KEY;
 
-	// To Check if entiry has associate entity
-	protected $BASE_HAS_ASSOCIATE;
-
-	// To Check if entiry has associate table
-	protected $BASE_ASSOCIATE_ENTITY;
+	/**
+	 * Has value if entity has associate table.
+	 * Note: Declaration of value is found in specific entity model
+	 *
+	 */
+	protected $ASSOCIATE_ENTITY;
 
 	// Type of the base selector key for validation purposes.
 	// protected $BASE_SELECTOR_KEY_TYPE;
@@ -96,7 +95,7 @@ class MY_Model extends CI_Model {
 		
 		$this->BASE_SELECTOR_KEY      = $this->_DEFAULTS["SELECTOR_KEY"];
 
-		$this->BASE_HAS_ASSOCIATE     = $this->_DEFAULTS["HAS_ASSOCIATE"];
+		$this->ASSOCIATE_ENTITY       = !empty($this->has_many) ? $this->has_many : '';
 
 		// $this->BASE_SELECTOR_KEY_TYPE = $this->_DEFAULTS["SELECTOR_KEY_TYPE"];
 
@@ -147,11 +146,12 @@ class MY_Model extends CI_Model {
 	| Public :: Find All
 	| -------------------------------------------------------------------
 	|	Find all items in the database using only the base query requirement. 
+	|	Can sort it by passing array of fields
 	|
 	*/
-	public function find_all()
+	public function find_all($sortby = array())
 	{
-		return $this->_EM->findBy($this->BASE_QUERY);
+		return $this->_EM->findBy($this->BASE_QUERY, $sortby);
 	}
 
 
@@ -275,8 +275,8 @@ class MY_Model extends CI_Model {
 		// Remove any instances of submit button
 		unset($obj["submit"]);
 
-		// check if $this has associate entity
-		if($this->BASE_HAS_ASSOCIATE) {
+		// check if entity has associate table
+		if(!empty($this->ASSOCIATE_ENTITY)) {
 
 			//remove all existing associate records.
 			$this->_delete_associate_records($item);
@@ -343,18 +343,20 @@ class MY_Model extends CI_Model {
 
 	/*
 	| -------------------------------------------------------------------
-	| Private ::  _delete_records
+	| Private ::  _delete_associate_records
 	| -------------------------------------------------------------------
 	|
 	*/
 	private function _delete_associate_records($obj)
 	{
-		//get existing associate records.
-		$get_associate_records = call_user_func_array( array($obj, "get" . ucfirst(camelize($this->BASE_ASSOCIATE_ENTITY))), array());
+		// Get all existing associate records.
+		$get_associate_records = call_user_func_array( array($obj, "get" . ucfirst(camelize($this->ASSOCIATE_ENTITY))), array());
 
+		// Return if no record is found. [Fail early validation]
 		if (!$get_associate_records->count())
 			return;
 
+		// delete all associate records from database.
 		foreach ($get_associate_records as $key => $value) {
 			$get_associate_records->removeElement($value);
 		}

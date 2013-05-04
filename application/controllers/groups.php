@@ -21,7 +21,7 @@ class Groups extends Base_Controller {
 	 */
 	public function index()
 	{
-		$data["groups"]    = $this->Group->find_all();
+		$data["groups"]    = $this->Group->find_all(array('name' => 'ASC'));
 		$data["main_content"] =	"groups/index";
 
 		$this->load->view("admin/template", $data);
@@ -39,7 +39,7 @@ class Groups extends Base_Controller {
 	{
 		$request = array("name" => $this->input->get("search", TRUE));
 
-		$data["groups"]    = $this->Group->find_by($request);
+		$data["groups"]    = $this->Group->find_by($request, TRUE);
 		$data["main_content"] =	"groups/index";
 
 		$this->load->view("admin/template", $data);
@@ -54,6 +54,10 @@ class Groups extends Base_Controller {
 	 */
 	public function add()
 	{
+		// form validation
+		if( $this->form_validation->run('groups') )
+			$this->submit();
+
 		$data["main_content"] = "groups/add";
 
 		$this->load->view("admin/template", $data);
@@ -78,13 +82,21 @@ class Groups extends Base_Controller {
 		$group = $this->Group->find_by(array("id" => $id));
 
 		// Fail Early if the query returns no item
-		if ( is_null($group) ) {
+		if ( empty($group) ) {
 			redirect("groups", "location");
 		}
 
-		$data["edit"]          = TRUE;
-		$data["group"]      = $group;
-		$data["main_content"]  = "groups/edit";
+		// Form Validation
+		if( $this->form_validation->run('groups') )
+			$this->submit();
+
+		// For displaying inputs purposes
+		if(!validation_errors())
+			$data["edit"]		= TRUE;
+		
+		$data["id"]				= $id;
+		$data["group"]			= $group;
+		$data["main_content"]	= "groups/edit";
 
 		$this->load->view("admin/template", $data);
 
@@ -152,7 +164,7 @@ class Groups extends Base_Controller {
 
 		echo $response ? "Bootstrap successful!" : "Failed";
 	}
-
+	
 }
 
 /* End of file groups.php */

@@ -1,21 +1,26 @@
+
+<?php echo validation_errors('<div class="alert alert-error">','</div>'); ?>
+
+
 <div>
 
+	<?php $id = isset($id) ? $id : ''; ?>
 
-	<?php echo form_open('groups/submit', array("class" => "form-horizontal")); ?>
 
-	<?php echo isset($edit) ? form_hidden('id', $group->getId()) : "" ; ?>
+	<?php echo form_open($main_content . '/' . $id, array("class" => "form-horizontal")); ?>
+
+	<?php echo !empty($id) ? form_hidden('id', $id) : "" ; ?>
 
 	<div class="control-group">
 
 	<?php echo form_label('Name:', 'name', array("class" => "control-label")); ?>
 
-		<div class="controls
-		">
+		<div class="controls">
 
-			<?php echo form_input('name', isset($edit) ? $group->getName() : ""); ?>
+			<?php echo form_input('name', isset($edit) ? $group->getName() : set_value('name')); ?>
 
 		</div> 
-
+		
 	</div>
 
 	<div class="control-group">
@@ -24,7 +29,7 @@
 
 		<div class="controls">
 
-			<?php echo form_textarea('shortDescription', isset($edit) ? $group->getShortDescription() : "", array("class" => "controls")); ?>
+			<?php echo form_textarea('shortDescription', isset($edit) ? $group->getShortDescription() : set_value('shortDescription'), array("class" => "controls")); ?>
 
 		</div>
 	
