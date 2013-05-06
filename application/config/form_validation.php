@@ -1,5 +1,8 @@
 <?php
 
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
 /**
   *  Added validation methods:
   *     
@@ -13,12 +16,12 @@ $config = array(
                                     array(
                                             'field' => 'name',
                                             'label' => 'Name',
-                                            'rules' => 'trim|required|xss_clean|check_if_exists[Group.name]'
+                                            'rules' => 'trim|required'
                                          ),
                                     array(
                                             'field' => 'shortDescription',
                                             'label' => 'Short Description',
-                                            'rules' => 'trim|xss_clean'
+                                            'rules' => 'trim'
                                          )
                                     )
                );

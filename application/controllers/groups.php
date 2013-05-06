@@ -54,9 +54,7 @@ class Groups extends Base_Controller {
 	 */
 	public function add()
 	{
-		// form validation
-		if( $this->form_validation->run('groups') )
-			$this->submit();
+		$this->submit();
 
 		$data["main_content"] = "groups/add";
 
@@ -86,9 +84,7 @@ class Groups extends Base_Controller {
 			redirect("groups", "location");
 		}
 
-		// Form Validation
-		if( $this->form_validation->run('groups') )
-			$this->submit();
+		$this->submit();
 
 		// For displaying inputs purposes
 		if(!validation_errors())
@@ -136,9 +132,20 @@ class Groups extends Base_Controller {
 	{
 
 		try {
+
+			// Get post data.
+			$data = $this->input->post(NULL, TRUE);
 			
+			/*
+			 * Fail early validation.
+			 * Dont proceed if post data is empty.
+			 */
+			if( !$data )
+				return false;
+
 			// Get the response from the model
-			$this->Group->submit($this->input->post(NULL, TRUE));
+			if( !$this->Group->submit($data) )
+				return false;
 			
 		} catch (Exception $e) {
 			

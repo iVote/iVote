@@ -22,7 +22,10 @@ class Group extends MY_Model {
 
 	public function submit($data)
 	{
-		$this->load->model("Group");
+
+		$this->form_validation->set_rules('name', 'Name', 'check_if_exists[Group.name]');
+		if(! $this->form_validation->run('groups', TRUE) )
+			return FALSE;
 
 		// Check if we can see an entry from the database
 		$item = $this->find_by( array("name" => $data["name"]), FALSE);
@@ -37,6 +40,7 @@ class Group extends MY_Model {
 
 		$this->save($data);
 
+		return TRUE;
 	}
 
 }
