@@ -51,6 +51,50 @@ class Position extends MY_Model {
 	}
 
 
+	/**
+	 * Validation method.
+	 * Put all customize validation method here.
+	 * @param  [type] $data [description] post data
+	 */
+	public function validate($data)
+	{
+		/* -------------- Start of Check if exists -------------- */
+			/* -------------- TO BE IMPROVED!! -------------- */
+
+		// Variable to be use as flag if 'check_if_exists' validation will run.
+		$use = TRUE;
+
+		/**
+		 * if Id is found, meaning the user is editing.
+		 * Get the data via id field.
+		 */
+		if( isset($data['id']) ) $position = $this->find_by(array("id" => $data['id']));
+
+		// If user is editing, and input data is the same data found in dbase, set flag as FALSE.
+		if( !empty($position) && $data['title'] == $position->getTitle())
+			$use = FALSE;
+
+		/**
+		 * If flag is set to FALSE, don't run 'check_if_exists' method.
+		 * If name already exists, set custom error.
+		 */
+		if(!$this->check_if_exists(array('title' => $data['title']), $use))
+			$this->form_validation->set_error('title', $data['title'] .' already exists');
+		
+
+		/* -------------- End of Check if exists -------------- */
+
+
+		// Run Form validation.
+		if(! $this->form_validation->run('positions', TRUE) )
+			return FALSE;
+
+
+		return TRUE;
+
+	}
+
+
 
 	/**
 	 * Used for bootstrapping / seeding database data

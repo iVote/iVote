@@ -1,9 +1,13 @@
+<?php echo validation_errors('<div class="alert alert-error">','</div>'); ?>
+
 <div>
 
+	<?php $id = isset($id) ? $id : ''; ?>
+	
 
-	<?php echo form_open('members/submit', array("class" => "form-horizontal")); ?>
+	<?php echo form_open($main_content . '/' . $id, array("class" => "form-horizontal")); ?>
 
-	<?php echo isset($edit) ? form_hidden('id', $member->getId()) : "" ; ?>
+	<?php echo !empty($id) ? form_hidden('id', $member->getId()) : "" ; ?>
 
 	<div class="control-group">
 
@@ -11,7 +15,7 @@
 
 		<div class="controls">
 
-			<?php echo form_input('name', isset($edit) ? $member->getName() : ""); ?>
+			<?php echo form_input('name', isset($edit) ? $member->getName() : set_value('name')); ?>
 
 		</div> 
 
@@ -23,7 +27,7 @@
 
 		<div class="controls">
 
-			<?php echo form_textarea('shortDescription', isset($edit) ? $member->getShortDescription() : "", array("class" => "controls")); ?>
+			<?php echo form_textarea('shortDescription', isset($edit) ? $member->getShortDescription() : set_value('shortDescription'), array("class" => "controls")); ?>
 
 		</div>
 	
@@ -43,7 +47,7 @@
 					$checked = !is_null($active_groups) ? in_array($value->getId(), $active_groups) : FALSE;
 
 				} ?>
-				<?php echo form_checkbox("groups[]", $value->getId(), isset($edit) ? $checked : FALSE); ?>
+				<?php echo form_checkbox("groups[]", $value->getId(), isset($edit) ? $checked : set_checkbox('groups', $value->getId())); ?>
 				<?php echo $value->getName(); ?>
 
 			</label>

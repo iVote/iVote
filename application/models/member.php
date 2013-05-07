@@ -49,6 +49,24 @@ class Member extends MY_Model {
 
 
 	/**
+	 * Validation method.
+	 * Put all customize validation method here.
+	 * @param  [type] $data [description] post data
+	 */
+	public function validate($data)
+	{
+		// Run Form validation.
+		if(! $this->form_validation->run('members', TRUE) )
+			return FALSE;
+
+
+		return TRUE;
+
+	}
+
+
+
+	/**
 	 * Used for bootstrapping / seeding database data
 	 * @return [type] [description]
 	 */

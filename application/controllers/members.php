@@ -21,7 +21,7 @@ class Members extends Base_Controller {
 	 */
 	public function index()
 	{
-		$data["members"]    = $this->Member->find_all();
+		$data["members"]    = $this->Member->find_all(array('name' => 'ASC'));
 		$data["main_content"] =	"members/index";
 
 		$this->load->view("admin/template", $data);
@@ -54,6 +54,8 @@ class Members extends Base_Controller {
 	 */
 	public function add()
 	{
+		$this->submit();
+
 		$data["groups"] = $this->Group->find_all();
 
 		$data["main_content"] = "members/add";
@@ -84,7 +86,13 @@ class Members extends Base_Controller {
 			redirect("members", "location");
 		}
 
-		$data["edit"]          = TRUE;
+		$this->submit();
+
+		// For displaying inputs purposes
+		if(!validation_errors())
+			$data["edit"]		= TRUE;
+
+		$data["id"]				= $id;
 		$data["member"]		   = $member;
 		$data["groups"]        = $this->Group->find_all();
 		$data["active_groups"] = $this->Group->get_group_ids($member);
@@ -129,8 +137,14 @@ class Members extends Base_Controller {
 
 		try {
 			
+			$data = $this->input->post(NULL, TRUE);
+
+			// Run Validation
+			if( !$this->Member->validate($data) )
+				return false;
+
 			// Get the response from the model
-			$this->Member->submit($this->input->post(NULL, TRUE));
+			$this->Member->submit($data);
 			
 		} catch (Exception $e) {
 			

@@ -21,7 +21,7 @@ class Positions extends Base_Controller {
 	 */
 	public function index()
 	{
-		$data["positions"]    = $this->Position->find_all();
+		$data["positions"]    = $this->Position->find_all(array('title' => 'ASC'));
 		$data["main_content"] =	"positions/index";
 
 		$this->load->view("admin/template", $data);
@@ -39,7 +39,7 @@ class Positions extends Base_Controller {
 	{
 		$request = array("title" => $this->input->get("search", TRUE));
 
-		$data["positions"]    = $this->Position->find_by($request);
+		$data["positions"]    = $this->Position->find_by($request, TRUE);
 		$data["main_content"] =	"positions/index";
 
 		$this->load->view("admin/template", $data);
@@ -54,6 +54,8 @@ class Positions extends Base_Controller {
 	 */
 	public function add()
 	{
+		$this->submit();
+
 		$data["groups"] = $this->Group->find_all();
 
 		$data["main_content"] = "positions/add";
@@ -84,7 +86,13 @@ class Positions extends Base_Controller {
 			redirect("positions", "location");
 		}
 
-		$data["edit"]          = TRUE;
+		$this->submit();
+
+		// For displaying inputs purposes
+		if(!validation_errors())
+			$data["edit"]		= TRUE;
+
+		$data["id"]				= $id;
 		$data["position"]      = $position;
 		$data["groups"]        = $this->Group->find_all();
 		$data["active_groups"] = $this->Group->get_group_ids($position);
@@ -128,9 +136,15 @@ class Positions extends Base_Controller {
 	{
 
 		try {
+
+			$data = $this->input->post(NULL, TRUE);
+
+			// Run Validation
+			if( !$this->Position->validate($data) )
+				return false;
 			
 			// Get the response from the model
-			$this->Position->submit($this->input->post(NULL, TRUE));
+			$this->Position->submit($data);
 			
 		} catch (Exception $e) {
 			
