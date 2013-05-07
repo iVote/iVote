@@ -29,7 +29,7 @@ class MY_Form_validation extends CI_Form_validation
             if (count($this->_field_data) > 0 && count($this->_config_rules) > 0) {
                 // Is there a validation rule for the particular URI being accessed?
                 $uri = ($group == '') ? trim($this->CI->uri->ruri_string(), '/') : $group;
- 
+                
                 if ($uri != '' AND isset($this->_config_rules[$uri])) {
                     $config_rules = $this->_config_rules[$uri];
                 } else {
@@ -40,6 +40,8 @@ class MY_Form_validation extends CI_Form_validation
                 foreach ($config_rules as $row) {
                     if (!isset($this->_field_data[$row['field']]))
                         $this->set_rules($row['field'], $row['label'], $row['rules']);
+                    else
+                        $this->_field_data[$row['field']]['rules'] .= '|' . $row['rules'];
                 }
             }
         }
@@ -49,27 +51,46 @@ class MY_Form_validation extends CI_Form_validation
 
 
 
+    /**
+     * Set Error
+     *
+     * @access  public
+     * @param   string
+     * @return  bool
+    */  
+
+    function set_error($field = '', $error = '')
+    {
+        if (empty($field) || empty($error))
+        {
+            return FALSE;
+        }
+        else
+        {
+            $this->CI->form_validation->_error_array[$field] = $error;
+
+            return TRUE;
+        }
+    }
+
+
 
     /**
-	 * Check if item already exists.
-	 * TO BE IMPROVED.
-	 */
-	public function check_if_exists($data, $arg)
-	{ 
-		
-		// Get entity and field name.
-		list($entity, $field) = explode('.', $arg);
-
-		// Get items via name field
-		$obj = $this->CI->$entity->find_by(array($field => $data), TRUE);
-
-		// if item is found, return. [Fail Early Validation]
-		if ( empty($obj) )
-			return TRUE;	
-
-		//if item is not found, set error message
-		$this->CI->form_validation->set_message('check_if_exists', $data . ' already exists');
-		return FALSE;
-	}
+     * Error Array
+     *
+     * Returns the error messages as an array
+     *
+     * @return  array
+     */
+    function error_array()
+    {
+        if (count($this->_error_array) === 0)
+        {
+                return FALSE;
+        }
+        else
+            return $this->_error_array;
+ 
+    }
 
 }

@@ -424,6 +424,38 @@ class MY_Model extends CI_Model {
 
 	}
 
+
+
+
+
+
+
+	/* ------------------------- Start of possible global Validation methods ------------------------- */
+
+
+	/**
+	 * Check if item already exists.
+	 * TO BE IMPROVED.
+	 */
+	public function check_if_exists($args, $use_this = TRUE)
+	{ 
+		if(!$use_this) return TRUE;
+
+		// Get items via name field
+		$obj = $this->find_by($args, TRUE);
+
+		// if item is found, return false. [Fail Early Validation]
+		if ( !empty($obj) )
+			return FALSE;
+
+		//if item is not found, set error message
+		return TRUE;
+	}
+
+
+
+	/* ------------------------- End of possible global Validation methods ------------------------- */
+
 }
 
 /* End of file MY_Model.php */

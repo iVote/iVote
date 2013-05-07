@@ -133,19 +133,14 @@ class Groups extends Base_Controller {
 
 		try {
 
-			// Get post data.
 			$data = $this->input->post(NULL, TRUE);
-			
-			/*
-			 * Fail early validation.
-			 * Dont proceed if post data is empty.
-			 */
-			if( !$data )
+
+			// Run Validation
+			if( !$this->Group->validate($data) )
 				return false;
 
 			// Get the response from the model
-			if( !$this->Group->submit($data) )
-				return false;
+			$this->Group->submit($data);
 			
 		} catch (Exception $e) {
 			
